@@ -1,18 +1,31 @@
 module Html.Internal where
 
-newtype Structure = Structure String
+import Numeric
+
 newtype Html = Html String
 type Title = String
+type Document
+  = [Structure]
 
-getStructureString (Structure str) = str
+data Structure
+  = Heading Natural String
+  | Paragraph String
+  | UnorderedList [String]
+  | OrderedList [String]
+  | CodeBlock [String]
 
-append_ :: Structure -> Structure -> Structure
-append_ (Structure s1) (Structure s2) = Structure (s1 <> s2)
+empty_ :: Structure
+empty_ = Structure ""
+
+instance Monioid Structure where
+  mempty = empty_
 
 el :: String -> (String -> String)
 el tag content = "<" <> tag <> ">" <> content <> "</" <> tag <> ">"
 
-h1_  = Structure . el "h1" . escape
+h_ :: Natural -> String -> Structure
+h_ nr title =
+  Structure . el ("h" <> show nr) . escape title
 p_  = Structure . el "p" . escape
 code_  = Structure . el "pre" . escape
 
@@ -43,7 +56,8 @@ escape =
   in
     concat . map escapeChar
 
-
-
-
-
+concatStructure :: [Structure] -> Structure
+concatStructure list =
+  case list of
+    [] -> empty_
+    x : xs -> x <> concatStructure xs
