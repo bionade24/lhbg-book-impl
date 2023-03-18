@@ -1,8 +1,12 @@
-module Main where
+module HsBlog
+  ( main
+  , process
+  )
+  where
 
-import qualified Markup
-import qualified Html
-import Convert (convert)
+import qualified HsBlog.Markup as Markup
+import qualified HsBlog.Html as Html
+import HsBlog.Convert (convert)
 
 import System.Directory (doesFileExist)
 import System.Environment (getArgs)
@@ -20,12 +24,11 @@ main = do
     [input, output] -> do
       content <- readFile input
       exists <- doesFileExist output
-        let
-          writeResult = writeFile output ( process input content)
-        in
-          if exists
-             then whenIO confirm writeResult
-             else writeResult
+      let
+        writeResult = writeFile output (process input content)
+      if exists
+         then whenIO confirm writeResult
+         else writeResult
     _ ->
       putStrLn "Usage: runghc Main.hs [-- <input-file> <output-file>]"
 
@@ -33,9 +36,9 @@ main = do
 process :: Html.Title -> String -> String
 process title = Html.render . convert title . Markup.parse
 
-cofirm :: IO Bool
+confirm :: IO Bool
 confirm = do
-  putStrLn "Are you sure (y(n)" *>
+  putStrLn "Are you sure? (y(n)"
   answer <- getLine
   case answer of
     "y" -> pure True
@@ -47,6 +50,6 @@ confirm = do
 whenIO :: IO Bool -> IO () -> IO ()
 whenIO cond action = do
   result <- cond
-    if result
-      then action
-      else pure ()
+  if result
+    then action
+    else pure ()

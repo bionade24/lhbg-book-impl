@@ -1,12 +1,11 @@
-module Convert where
+module HsBlog.Convert where
 
-import System.Directory (doesFileExist)
-import System.Environment (getArgs)
+import qualified HsBlog.Markup as Markup
+import qualified HsBlog.Html as Html
 
-import qualified Markup
-import qualified Html
-import qualified Html.Internal as HI
-
+convert :: Html.Title -> Markup.Document -> Html.Html
+convert title =
+  Html.html_ title . foldMap convertStructure
 
 convertStructure :: Markup.Structure -> Html.Structure
 convertStructure structure =
@@ -17,7 +16,7 @@ convertStructure structure =
     Markup.Paragraph p ->
       Html.p_ p
 
-    Markup.UnroderedList list ->
+    Markup.UnorderedList list ->
       Html.ul_ $ map Html.p_ list
 
     Markup.OrderedList list ->
@@ -26,5 +25,3 @@ convertStructure structure =
     Markup.CodeBlock list ->
       Html.code_ (unlines list)
 
-process :: Html.Title -> String -> String
-process title = Html.render . convert title . Markup.parse
