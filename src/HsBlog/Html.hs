@@ -5,10 +5,16 @@ module HsBlog.Html
   , html_
   , h_
   , p_
-  , render
   , ul_
   , ol_
   , code_
+  , Content
+  , txt_
+  , img_
+  , link_
+  , b_
+  , i_
+  , render
   )
   where
 

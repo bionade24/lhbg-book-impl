@@ -12,6 +12,9 @@ type Title =
 newtype Structure =
   Structure String
 
+newtype Content =
+  Content String
+
 instance Semigroup Structure where
   (<>) c1 c2 =
     Structure (getStructureString c1 <> getStructureString c2)
@@ -19,20 +22,16 @@ instance Semigroup Structure where
 instance Monoid Structure where
   mempty = Structure ""
 
-empty_ :: Structure
-empty_ =
-  Structure ""
+html_ :: String -> Structure -> Html
+html_ title content = Html (el "html" (el "head" ((el "title" (escape title)) <> (el "body" (getStructureString content)))))
 
-el :: String -> (String -> String)
-el tag content = "<" <> tag <> ">" <> content <> "</" <> tag <> ">"
-
-h_ :: Natural -> String -> Structure
+h_ :: Natural -> Content -> Structure
 h_ nr title =
-  (Structure . el ("h" <> show nr) . escape) title
+  (Structure . el ("h" <> show nr) . getContentString) title
 
-p_ :: String -> Structure
+p_ :: Content -> Structure
 p_  =
-  Structure . el "p" . escape
+  Structure . el "p" . getContentString
 
 code_ :: String -> Structure
 code_  =
@@ -50,18 +49,66 @@ ol_ :: [Structure] -> Structure
 ol_ =
   genericList "ul" "li"
 
-html_ :: String -> Structure -> Html
-html_ title content = Html (el "html" (el "head" ((el "title" (escape title)) <> (el "body" (getStructureString content)))))
+
+-- * Content
+
+txt_ :: String -> Content
+txt_ =
+  Content . escape
+
+link_ :: FilePath -> Content -> Content
+link_ path content =
+  Content $
+    elAttr
+      "a"
+      ("href?=\"" <> escape path <> "\"")
+      (getContentString content)
+
+img_ :: FilePath -> Content
+img_ path =
+  Content $ "<img src=\"" <> escape path <> "\""
+
+b_ :: Content -> Content
+b_ content =
+  Content $ el "b" (getContentString content)
+
+i_ :: Content -> Content
+i_ content =
+  Content $ el "i" (getContentString content)
+
+instance Semigroup Content where
+  (<>) c1 c2 =
+    Content (getContentString c1 <> getContentString c2)
+
+instance Monoid Content where
+  mempty = Content ""
+
+
+-- * Render
 
 render :: Html -> String
 render html =
   case html of
     Html str -> str
 
+-- * Utils
+
+el :: String -> (String -> String)
+el tag content = "<" <> tag <> ">" <> content <> "</" <> tag <> ">"
+
+elAttr :: String -> String -> String -> String
+elAttr tag attrs content =
+  "<" <> tag <> " " <> attrs <> ">" <> content <> "</" <> tag <> ">"
+
 getStructureString :: Structure -> String
 getStructureString content =
   case content of
     Structure str -> str
+
+getContentString :: Content -> String
+getContentString content =
+  case content of
+    Content str -> str
 
 escape :: String -> String
 escape =
