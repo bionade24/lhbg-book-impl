@@ -1,7 +1,6 @@
 module Main where
 
 import qualified HsBlog
-import HsBlog.Directory (confirm)
 import OptParse
 
 import System.Exit (exitFailure)
@@ -12,8 +11,8 @@ main :: IO ()
 main = do
   options <- parse
   case options of
-    ConvertDir input output ->
-      HsBlog.convertDirectory input output
+    ConvertDir input output env ->
+      HsBlog.convertDirectory env input output
 
     ConvertSingle input output -> do
       (title, inputHandle) <-
@@ -30,7 +29,7 @@ main = do
             exists <- doesFileExist file
             shouldOpenFile <-
               if exists
-                then confirm ("Overwrite " <> file <> " ?")
+                then HsBlog.confirm ("Overwrite " <> file <> " ?")
                 else pure True
             if shouldOpenFile
               then

@@ -3,6 +3,9 @@ module HsBlog.Html
   , Title
   , Structure
   , html_
+  , meta_
+  , stylesheet_
+  , title_
   , h_
   , p_
   , ul_
@@ -19,3 +22,5 @@ module HsBlog.Html
   where
 
 import HsBlog.Html.Internal
+import GHC.IO.Handle.Internals (hLookAhead_)
+
